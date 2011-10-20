@@ -1,0 +1,7 @@
+/.idea/
+JavaNativeLoader.iml
+/target/
+*.o
+*.obj
+.DS_Store
+
