@@ -112,7 +112,7 @@ public final class NativeLoader {
             Collection<ArchPatternCollPair> archPats = new ArrayList<ArchPatternCollPair>(2);
 
             pats = new ArrayList<Pattern>(2);
-            pats.add(Pattern.compile("x86"));
+            pats.add(Pattern.compile("x86[^_]"));
             pats.add(Pattern.compile("i386"));
             archPats.add(new ArchPatternCollPair(Arch.i386, Collections.unmodifiableCollection(pats)));
 
@@ -130,7 +130,7 @@ public final class NativeLoader {
         for(final ArchPatternCollPair apPair : ArchPatterns) {
             for(final Pattern p : apPair.pats) {
                 final Matcher m = p.matcher(archString);
-                if(m.matches()) {
+                if(m.find()) {
                     return apPair.arch;
                 }
             }
@@ -147,7 +147,7 @@ public final class NativeLoader {
         for(final SystemPatternCollPair spPair : SystemPatterns) {
             for(final Pattern p : spPair.pats) {
                 final Matcher m = p.matcher(systemString);
-                if(m.matches()) {
+                if(m.find()) {
                     return spPair.system;
                 }
             }
