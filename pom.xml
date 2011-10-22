@@ -8,9 +8,9 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-    <groupId>JavaNativeLoader</groupId>
+    <groupId>se.softhouse.garden.javanativeloader</groupId>
     <artifactId>JavaNativeLoader</artifactId>
-    <version>1.0</version>
+    <version>0.0.1</version>
 
     <dependencies>
         <dependency>
