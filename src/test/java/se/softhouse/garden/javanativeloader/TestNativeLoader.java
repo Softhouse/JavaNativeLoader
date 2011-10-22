@@ -19,7 +19,6 @@ SOFTWARE.
 
 package se.softhouse.garden.javanativeloader;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 public final class TestNativeLoader {
@@ -32,6 +31,10 @@ public final class TestNativeLoader {
     @Test
     public void worksInStaticInitializer() {
         final SomeClassThatNeedsNativeLibs instance = new SomeClassThatNeedsNativeLibs();
-        Assert.assertEquals(10, instance.add(2, 8));
+        // For some strange reason assertEquals fails for me on Mac OS X
+        // so here is a manual assert.
+        if(instance.add(2, 8) != 10) {
+            throw new RuntimeException("2 + 8 does not equal 10");
+        }
     }
 }
