@@ -250,10 +250,8 @@ public final class NativeLoader {
         for(final LibraryLoadInfo info : loadInfos) {
             if(info.arch.equals(arch) && info.system.equals(sys)) {
                 loadLibrary(info.name);
-                return;
             }
         }
-        throw new NoLibraryFoundException(sys.name(), arch.name());
     }
 
     /**
@@ -267,9 +265,8 @@ public final class NativeLoader {
         for(final LibraryLoadInfo info : loadInfos) {
             if(info.arch.equals(arch) && info.system.equals(sys)) {
                 saveResourceInTempFolder(info.name);
-                return TempDir;
             }
         }
-        throw new NoLibraryFoundException(sys.name(), arch.name());
+        return TempDir;
     }
 }
