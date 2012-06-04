@@ -21,6 +21,7 @@ package se.softhouse.garden.javanativeloader;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -97,6 +98,7 @@ public final class NativeLoader {
 
     private final static Collection<SystemPatternCollPair> SystemPatterns;
     private final static Collection<ArchPatternCollPair> ArchPatterns;
+    private final static String TempDir;
 
     static {
         Collection<Pattern> pats;
@@ -137,6 +139,9 @@ public final class NativeLoader {
 
             ArchPatterns = Collections.unmodifiableCollection(archPats);
         }
+
+        // TempDir
+        TempDir = createTempDir();
     }
 
     public static Arch detectArch(final boolean throwWhenNotFound) {
@@ -173,6 +178,15 @@ public final class NativeLoader {
         }
     }
 
+    private static void mkdirs(File forFile) throws IOException {
+        final File dir = forFile.getParentFile();
+        if(dir == null)
+            return;
+        if(!dir.mkdirs()) {
+            throw new IOException("Failed to create directory: " + dir);
+        }
+    }
+
     private static String saveResourceInTempFolder(final String name) {
         try {
             final InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(name);
@@ -180,7 +194,11 @@ public final class NativeLoader {
                 throw new RuntimeException(String.format("Could not find the resource %s in the classpath", name));
             }
             try {
-                final File tmpFile = File.createTempFile("javaNativeLoaderLib_", null);
+                final File tmpFile = new File(TempDir, name);
+                mkdirs(tmpFile);
+                if(!tmpFile.createNewFile()) {
+                    throw new IOException("Could not create file: " + tmpFile.getCanonicalPath());
+                }
                 tmpFile.deleteOnExit();
                 final FileOutputStream fos = new FileOutputStream(tmpFile);
                 try {
@@ -202,6 +220,23 @@ public final class NativeLoader {
         }
     }
 
+    private static String createTempDir() {
+        try {
+            final File tmpDir = File.createTempFile("javaNativeLoaderDir_", null);
+            if(!tmpDir.delete()) {
+                throw new IOException("Could not delete temporary file: " + tmpDir.getCanonicalPath());
+            }
+            if(!tmpDir.mkdir()) {
+                throw new IOException("Could not create directory: " + tmpDir.getCanonicalPath());
+            }
+            tmpDir.deleteOnExit();
+            return tmpDir.getCanonicalPath();
+        }
+        catch(Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static void loadLibrary(final String name) {
         java.lang.System.load(saveResourceInTempFolder(name));
     }
@@ -214,6 +249,23 @@ public final class NativeLoader {
             if(info.arch.equals(arch) && info.system.equals(sys)) {
                 loadLibrary(info.name);
                 return;
+            }
+        }
+        throw new NoLibraryFoundException(sys.name(), arch.name());
+    }
+
+    /**
+     * Extracts the libraries indicated by loadInfos into a temporary folder
+     * and returns the path to that folder. Does not link.
+     */
+    public static String extractLibraries(final Collection<LibraryLoadInfo> loadInfos) {
+        final Arch arch = detectArch(true);
+        final System sys = detectSystem(true);
+
+        for(final LibraryLoadInfo info : loadInfos) {
+            if(info.arch.equals(arch) && info.system.equals(sys)) {
+                saveResourceInTempFolder(info.name);
+                return TempDir;
             }
         }
         throw new NoLibraryFoundException(sys.name(), arch.name());
