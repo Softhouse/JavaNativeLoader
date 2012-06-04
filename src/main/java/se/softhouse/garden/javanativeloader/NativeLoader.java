@@ -180,8 +180,10 @@ public final class NativeLoader {
 
     private static void mkdirs(File forFile) throws IOException {
         final File dir = forFile.getParentFile();
-        if(dir == null)
+
+        if(dir == null || dir.exists())
             return;
+
         if(!dir.mkdirs()) {
             throw new IOException("Failed to create directory: " + dir);
         }
